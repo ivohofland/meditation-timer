@@ -128,10 +128,44 @@ in a high-quality format.
   of stopping dead, which would click.
 - **The session ends after the last tail.** The page releases the wake lock
   and closes the audio context only once the last end strike has rung out.
-- **Phone locked mid-session.** Not designed for. Keeping audio alive on a
-  locked screen means rendering the whole session as one media stream, which
-  costs over 100 MB of memory per hour of uncompressed audio. The wake lock
-  keeps the screen on instead.
+- **Phone locked mid-session.** The Web Audio version stops: the browser
+  suspends the page and its audio. The wake lock keeps the screen on instead.
+  The stream version below keeps playing.
+
+## The stream version (being compared)
+
+A second engine, at `/stream.html`, plays the whole sitting as a finished HLS
+stream through an `<audio>` element. The system media player then keeps it
+going with the screen locked, the way a podcast does. Rendering the session as
+one uncompressed track was rejected earlier for memory (over 100 MB an hour);
+a stream of pre-encoded pieces avoids that.
+
+- **Pieces.** Soft strike, full strike, the three end strikes mixed into one
+  piece (so their tails overlap as before), and silence of 60, 10 and 1 s.
+  Rendered from `DEFAULT_BOWL` with the same envelope as the live bell, encoded
+  as AAC in MPEG-TS (`pnpm pieces`, needs ffmpeg). Silence is 16 kbps: about
+  4 MB an hour.
+- **Timing.** Encoded pieces run a few tens of milliseconds long; silence is
+  laid out by real lengths, so each bell lands up to a second early and the
+  slack never adds up. The countdown reads the stream position, so display and
+  sound agree, and scrubbing the system player moves the timer with it.
+- **The playlist** is built in the page and handed to the player as a `data:`
+  link (6 KB for 20 minutes, 136 KB at worst: 180 minutes, a bell every
+  minute). iOS rejects a `blob:` link. Hosting stays static files; the CSP
+  already allows `media-src data:`. Nginx serves `.ts` as `video/mp2t` by default.
+- **Bells must not overlap.** Pieces play one after another, so a bell's tail
+  must end before the next bell: fine for intervals of a minute and up.
+- **No wake lock.** The screen may sleep; that is the point.
+- **Stop cannot fade on iOS,** where a page cannot set media volume: the sound
+  plays on for the release time, then stops.
+- **The system player shows the stream's length,** lead-in and ring-out
+  included (a 4-minute sitting shows about 5:17).
+
+Tested on an iPhone (2026-10-31): plays with the `data:` playlist, including a
+60-minute sitting with a bell every minute, and keeps playing on a locked
+screen. Still open: which engine `/` uses on which device, and whether the bell
+needs retuning for phone speakers (it sounded thinner on the phone; its 220 Hz
+fundamental sits below what small speakers reproduce well).
 
 ## Look
 
