@@ -1,4 +1,4 @@
-import { createSynthBell, DEFAULT_BOWL, RELEASE_S, voiceEnd } from './synth-bell'
+import { createSynthBell, DEFAULT_BOWL, DEFAULT_SOUNDS, DEFAULT_TING, FULL_PEAK, RELEASE_S, voiceEnd } from './synth-bell'
 
 type Call = [method: string, ...args: number[]]
 
@@ -55,7 +55,7 @@ test('voiceEnd is -90 dB on an exponential decay', () => {
 
 test('a full strike sounds every partial plus the beat', () => {
   const { ctx, oscillators } = fakeContext()
-  createSynthBell(DEFAULT_BOWL)(ctx, 5, 'full')
+  createSynthBell(DEFAULT_SOUNDS)(ctx, 5, 'full')
   const freqs = oscillators.map(o => o.frequency).sort((a, b) => a - b)
   expect(freqs).toHaveLength(4)
   ;[220, 221.5, 596.2, 1188].forEach((f, i) => expect(freqs[i]).toBeCloseTo(f))
@@ -64,14 +64,14 @@ test('a full strike sounds every partial plus the beat', () => {
 
 test('voice ends at the fundamental voiceEnd and oscillators stop there', () => {
   const { ctx, oscillators } = fakeContext()
-  const v = createSynthBell(DEFAULT_BOWL)(ctx, 5, 'full')
+  const v = createSynthBell(DEFAULT_SOUNDS)(ctx, 5, 'full')
   expect(v.endsAt).toBe(voiceEnd(5, 30))
   expect(oscillators.every(o => o.stoppedAt === v.endsAt)).toBe(true)
 })
 
 test('each partial attacks over ATTACK_S then decays to -90 dB at its own voiceEnd', () => {
   const { ctx, gains } = fakeContext()
-  createSynthBell(DEFAULT_BOWL)(ctx, 0, 'full')
+  createSynthBell(DEFAULT_SOUNDS)(ctx, 0, 'full')
   const envelopes = gains.filter(g => g.calls.some(c => c[0] === 'exp'))
   expect(envelopes).toHaveLength(4)
   const ends = envelopes.map(g => g.calls.find(c => c[0] === 'exp')![2]).sort((a, b) => a! - b!)
@@ -85,24 +85,27 @@ test('each partial attacks over ATTACK_S then decays to -90 dB at its own voiceE
 
 test('a full strike peaks below 1 in sum', () => {
   const { ctx, gains } = fakeContext()
-  createSynthBell(DEFAULT_BOWL)(ctx, 0, 'full')
+  createSynthBell(DEFAULT_SOUNDS)(ctx, 0, 'full')
   const peaks = gains.flatMap(g => g.calls.filter(c => c[0] === 'linear').map(c => c[1]!))
   expect(peaks.reduce((a, b) => a + b, 0)).toBeLessThan(1)
 })
 
-test('a soft strike is quieter and shorter', () => {
-  const full = fakeContext()
-  createSynthBell(DEFAULT_BOWL)(full.ctx, 0, 'full')
-  const soft = fakeContext()
-  const v = createSynthBell(DEFAULT_BOWL)(soft.ctx, 0, 'soft')
-  expect(v.endsAt).toBeCloseTo(voiceEnd(0, 30 * 0.6))
-  const peak = (g: ReturnType<typeof fakeParam>[]) => g.flatMap(x => x.calls.filter(c => c[0] === 'linear').map(c => c[1]!)).reduce((a, b) => a + b, 0)
-  expect(peak(soft.gains)).toBeCloseTo(peak(full.gains) * 0.5)
+test('a soft strike is the ting: its own pitch, short and quiet', () => {
+  const { ctx, oscillators, gains } = fakeContext()
+  const v = createSynthBell(DEFAULT_SOUNDS)(ctx, 0, 'soft')
+  const freqs = oscillators.map(o => o.frequency).sort((a, b) => a - b)
+  expect(freqs[0]).toBe(DEFAULT_TING.fundamentalHz)
+  expect(freqs.every(f => f >= 1000)).toBe(true)
+  expect(v.endsAt).toBeCloseTo(voiceEnd(0, DEFAULT_TING.t60S))
+  expect(v.endsAt).toBeLessThan(6)
+  const peak = gains.flatMap(x => x.calls.filter(c => c[0] === 'linear').map(c => c[1]!)).reduce((a, b) => a + b, 0)
+  expect(peak).toBeCloseTo(FULL_PEAK * DEFAULT_TING.level)
+  expect(DEFAULT_TING.level).toBeLessThan(DEFAULT_BOWL.level)
 })
 
 test('release fades over RELEASE_S and stops the oscillators after it', () => {
   const { ctx, oscillators, gains } = fakeContext()
-  const v = createSynthBell(DEFAULT_BOWL)(ctx, 0, 'full')
+  const v = createSynthBell(DEFAULT_SOUNDS)(ctx, 0, 'full')
   v.release(10)
   expect(oscillators.every(o => o.stoppedAt === 10 + RELEASE_S)).toBe(true)
   const out = gains.find(g => g.calls.some(c => c[0] === 'cancel'))!
@@ -111,7 +114,7 @@ test('release fades over RELEASE_S and stops the oscillators after it', () => {
 
 test('release before the strike sounds stops it unheard', () => {
   const { ctx, oscillators, gains } = fakeContext()
-  const v = createSynthBell(DEFAULT_BOWL)(ctx, 20, 'full')
+  const v = createSynthBell(DEFAULT_SOUNDS)(ctx, 20, 'full')
   v.release(19.5)
   expect(oscillators.every(o => o.stoppedAt === 19.5)).toBe(true)
   const out = gains.find(g => g.calls.some(c => c[0] === 'cancel'))

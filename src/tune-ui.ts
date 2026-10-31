@@ -1,64 +1,69 @@
 import { unlockAudio } from './platform'
 import { END_GAP_S, END_STRIKES } from './strikes'
-import { type BowlParams, createSynthBell, DEFAULT_BOWL } from './synth-bell'
+import { type BowlParams, createSynthBell, DEFAULT_BOWL, DEFAULT_TING, type Partial as BowlPartial, type Sounds } from './synth-bell'
 
-const params: BowlParams = structuredClone(DEFAULT_BOWL) as BowlParams
-const partials = params.partials.map(p => ({ ...p }))
-params.partials = partials
+type Editable = Omit<BowlParams, 'partials'> & { partials: BowlPartial[] }
+const editable = (p: BowlParams): Editable => ({ ...p, partials: p.partials.map(x => ({ ...x })) })
+const sounds: { full: Editable; soft: Editable } = { full: editable(DEFAULT_BOWL), soft: editable(DEFAULT_TING) }
 
 let ctx: AudioContext | null = null
 
-function slider(parent: HTMLElement, label: string, min: number, max: number, step: number, get: () => number, set: (v: number) => void) {
-  const wrap = document.createElement('label')
-  wrap.className = 'slider'
-  const name = document.createElement('span')
-  name.className = 'label'
-  name.textContent = label
-  const out = document.createElement('output')
-  const input = document.createElement('input')
-  input.type = 'range'
-  input.min = String(min)
-  input.max = String(max)
-  input.step = String(step)
-  input.value = String(get())
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
+  const e = document.createElement(tag)
+  if (cls) e.className = cls
+  if (text) e.textContent = text
+  return e
+}
+
+function slider(parent: HTMLElement, label: string, min: number, max: number, step: number, get: () => number, set: (v: number) => void, onChange: () => void) {
+  const wrap = el('label', 'slider')
+  const out = el('output')
+  const input = el('input')
+  Object.assign(input, { type: 'range', min: String(min), max: String(max), step: String(step), value: String(get()) })
   const show = () => { out.textContent = String(get()) }
-  input.addEventListener('input', () => { set(Number(input.value)); show(); render() })
+  input.addEventListener('input', () => { set(Number(input.value)); show(); onChange() })
   show()
-  wrap.append(name, out, input)
+  wrap.append(el('span', 'label', label), out, input)
   parent.append(wrap)
 }
 
-const bowl = document.getElementById('bowl')!
-slider(bowl, 'Fundamental (Hz)', 150, 500, 1, () => params.fundamentalHz, v => { params.fundamentalHz = v })
-slider(bowl, 'Ring time to −60 dB (s)', 5, 60, 1, () => params.t60S, v => { params.t60S = v })
-slider(bowl, 'Beat (Hz)', 0, 4, 0.1, () => params.beatHz, v => { params.beatHz = v })
-
-const partialsEl = document.getElementById('partials')!
-partials.forEach((p, i) => {
-  const group = document.createElement('div')
-  group.className = 'partial'
-  const title = document.createElement('span')
-  title.className = 'label'
-  title.textContent = `Partial ${i + 1}`
-  group.append(title)
-  slider(group, 'Ratio', 1, 8, 0.01, () => p.ratio, v => { p.ratio = v })
-  slider(group, 'Level', 0, 1, 0.01, () => p.gain, v => { p.gain = v })
-  slider(group, 'Ring time (fraction)', 0.1, 1.5, 0.05, () => p.t60Factor, v => { p.t60Factor = v })
-  partialsEl.append(group)
-})
-
-const pre = document.getElementById('params')!
-function render() {
-  const list = partials.map(p => `    { ratio: ${p.ratio}, gain: ${p.gain}, t60Factor: ${p.t60Factor} },`).join('\n')
-  pre.textContent = `export const DEFAULT_BOWL: BowlParams = {\n  fundamentalHz: ${params.fundamentalHz},\n  t60S: ${params.t60S},\n  beatHz: ${params.beatHz},\n  partials: [\n${list}\n  ],\n}`
+function literal(name: string, p: Editable): string {
+  const list = p.partials.map(x => `    { ratio: ${x.ratio}, gain: ${x.gain}, t60Factor: ${x.t60Factor} },`).join('\n')
+  return `export const ${name}: BowlParams = {\n  fundamentalHz: ${p.fundamentalHz},\n  t60S: ${p.t60S},\n  beatHz: ${p.beatHz},\n  level: ${p.level},\n  partials: [\n${list}\n  ],\n}`
 }
-render()
+
+function section(title: string, constName: string, p: Editable, ranges: { hz: [number, number]; t60: [number, number] }) {
+  const root = document.getElementById('sounds')!
+  const pre = el('pre')
+  const render = () => { pre.textContent = literal(constName, p) }
+
+  root.append(el('h2', undefined, title))
+  const card = el('div', 'card')
+  root.append(card)
+  slider(card, 'Fundamental (Hz)', ranges.hz[0], ranges.hz[1], 1, () => p.fundamentalHz, v => { p.fundamentalHz = v }, render)
+  slider(card, 'Ring time to −60 dB (s)', ranges.t60[0], ranges.t60[1], 0.5, () => p.t60S, v => { p.t60S = v }, render)
+  slider(card, 'Beat (Hz)', 0, 4, 0.1, () => p.beatHz, v => { p.beatHz = v }, render)
+  slider(card, 'Level', 0.05, 1, 0.05, () => p.level, v => { p.level = v }, render)
+  p.partials.forEach((x, i) => {
+    const group = el('div', 'partial')
+    group.append(el('span', 'label', `Partial ${i + 1}`))
+    slider(group, 'Ratio', 1, 8, 0.01, () => x.ratio, v => { x.ratio = v }, render)
+    slider(group, 'Level', 0, 1, 0.01, () => x.gain, v => { x.gain = v }, render)
+    slider(group, 'Ring time (fraction)', 0.1, 1.5, 0.05, () => x.t60Factor, v => { x.t60Factor = v }, render)
+    card.append(group)
+  })
+  root.append(el('h2', undefined, `Paste into ${constName}`), pre)
+  render()
+}
+
+section('Bowl (start and end)', 'DEFAULT_BOWL', sounds.full, { hz: [150, 500], t60: [5, 60] })
+section('Ting (every few minutes)', 'DEFAULT_TING', sounds.soft, { hz: [600, 4000], t60: [0.5, 10] })
 
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-play]')) {
   button.addEventListener('click', async () => {
     ctx ??= new AudioContext()
     await unlockAudio(ctx, document)
-    const bell = createSynthBell(structuredClone(params))
+    const bell = createSynthBell(structuredClone(sounds) as Sounds)
     const at = ctx.currentTime + 0.05
     const kind = button.dataset.play
     if (kind === 'end') {

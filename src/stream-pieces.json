@@ -18,8 +18,8 @@
   ],
   "soft": {
     "uri": "soft.ts",
-    "nominalS": 27,
-    "durationS": 27.029333
+    "nominalS": 5,
+    "durationS": 5.034667
   },
   "full": {
     "uri": "full.ts",

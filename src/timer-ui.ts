@@ -4,7 +4,7 @@ import { type SessionState, Session } from './session'
 import { beginStream } from './stream-engine'
 import { DEFAULT_SETTINGS, parseSettings, type Settings } from './settings'
 import { START_DELAY_S } from './strikes'
-import { createSynthBell, DEFAULT_BOWL, RELEASE_S } from './synth-bell'
+import { createSynthBell, DEFAULT_SOUNDS, RELEASE_S } from './synth-bell'
 
 const STORAGE_KEY = 'meditation-timer:settings'
 
@@ -82,7 +82,7 @@ async function beginWebAudio(settings: Settings): Promise<Running> {
   const ctx = new AudioContext()
   const silence = await unlockAudio(ctx, document)
   const watch = keepAudioRunning(ctx, document)
-  const session = new Session(ctx, createSynthBell(DEFAULT_BOWL), settings)
+  const session = new Session(ctx, createSynthBell(DEFAULT_SOUNDS), settings)
   const lock = keepAwake(navigator, document)
   session.start()
   let stoppedAt: number | null = null

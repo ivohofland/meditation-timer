@@ -52,23 +52,28 @@ Interval bells fall strictly before the end: `t < total`.
 
 ## The bell
 
-**One sound, three uses. The pattern carries the meaning, not the timbre.**
-With your eyes closed you can count, not read.
+**Two sounds. The bowl opens and closes the sitting; a single ting marks the
+interval.** With your eyes closed you can tell them apart at once.
 
 | Moment | Signal |
 |---|---|
-| Start (optional, on by default) | 1 full strike, 20 s after Begin |
-| Every *x* minutes | 1 soft strike |
-| End | 3 full strikes, 6 s apart, each left to ring |
+| Start (optional, on by default) | 1 bowl strike, 20 s after Begin |
+| Every *x* minutes | 1 ting |
+| End | 3 bowl strikes, 6 s apart, each left to ring |
 
-This follows the practice these timers borrow from: in Zen and Plum Village
-traditions a single bell marks every transition, and the number of strikes
+Start and end follow the practice these timers borrow from: in Zen and Plum
+Village traditions a bell marks the transitions, and the number of strikes
 says which one. The start bell waits 20 seconds after Begin, time to put the
 phone down and settle; the duration is timed from that bell. The settings
 screen says so beside the option, and the running screen counts the 20
 seconds down ("First bell in 0:20"). Without a start bell the sitting begins
-at once. The soft strike is about half the volume and rings shorter;
-it tells you where you are without pulling you out.
+at once.
+
+The interval was first a softer bowl strike (half the level, still ringing
+about 27 s). In use it was too long and too loud for a divider: it pulled you
+out of the sitting. It is now a ting: one short, high, quiet tone (around
+1,760 Hz, gone in about 4.5 s, about a third of the bowl's level). It says
+"a block has passed" and nothing more.
 
 **Copy stays plain.** "Bell every 5 minutes", "Three bells to end". No
 religious or tradition-specific terms in the interface.
@@ -140,7 +145,7 @@ going with the screen locked, the way a podcast does. Rendering the session as
 one uncompressed track was rejected earlier for memory (over 100 MB an hour);
 a stream of pre-encoded pieces avoids that.
 
-- **Pieces.** Soft strike, full strike, the three end strikes mixed into one
+- **Pieces.** The ting, a bowl strike, the three end strikes mixed into one
   piece (so their tails overlap as before), and silence of 60, 10 and 1 s.
   Rendered from `DEFAULT_BOWL` with the same envelope as the live bell, encoded
   as AAC in MPEG-TS (`pnpm pieces`, needs ffmpeg). Silence is 16 kbps: about
