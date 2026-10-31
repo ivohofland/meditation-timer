@@ -71,8 +71,9 @@ at once.
 
 The interval was first a softer bowl strike (half the level, still ringing
 about 27 s). In use it was too long and too loud for a divider: it pulled you
-out of the sitting. It is now a ting: one short, high, quiet tone (around
-1,760 Hz, gone in about 4.5 s, about a third of the bowl's level). It says
+out of the sitting. It is now a ting: one short, high, quiet tone with a light strike in the
+attack (around 1,440 Hz, gone in about 6 s, about 40% of the bowl's level),
+tuned by ear halfway between a small bell and a tingsha. It says
 "a block has passed" and nothing more.
 
 **Copy stays plain.** "Bell every 5 minutes", "Three bells to end". No

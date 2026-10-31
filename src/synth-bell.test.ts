@@ -97,7 +97,7 @@ test('a soft strike is the ting: its own pitch, short and quiet', () => {
   expect(freqs[0]).toBe(DEFAULT_TING.fundamentalHz)
   expect(freqs.every(f => f >= 1000)).toBe(true)
   expect(v.endsAt).toBeCloseTo(voiceEnd(0, DEFAULT_TING.t60S))
-  expect(v.endsAt).toBeLessThan(6)
+  expect(v.endsAt).toBeLessThan(10)
   const peak = gains.flatMap(x => x.calls.filter(c => c[0] === 'linear').map(c => c[1]!)).reduce((a, b) => a + b, 0)
   expect(peak).toBeCloseTo(FULL_PEAK * DEFAULT_TING.level)
   expect(DEFAULT_TING.level).toBeLessThan(DEFAULT_BOWL.level)

@@ -20,7 +20,7 @@ const TING_PRESETS: Record<string, BowlParams> = {
     fundamentalHz: 1046, t60S: 2.5, beatHz: 0.8, level: 0.45,
     partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.76, gain: 0.25, t60Factor: 0.5 }, { ratio: 5.4, gain: 0.1, t60Factor: 0.25 }],
   },
-  Current: DEFAULT_TING,
+  'In between (default)': DEFAULT_TING,
 }
 
 let ctx: AudioContext | null = null
