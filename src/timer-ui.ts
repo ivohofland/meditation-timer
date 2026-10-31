@@ -1,5 +1,5 @@
 import { formatRemaining } from './format'
-import { keepAwake, unlockAudio } from './platform'
+import { keepAudioRunning, keepAwake, unlockAudio } from './platform'
 import { type SessionState, Session } from './session'
 import { beginStream } from './stream-engine'
 import { DEFAULT_SETTINGS, parseSettings, type Settings } from './settings'
@@ -21,6 +21,7 @@ const leadIn = $<HTMLElement>('lead-in')
 const leadInTime = $<HTMLElement>('lead-in-time')
 const stop = $<HTMLButtonElement>('stop')
 const notice = $<HTMLElement>('notice')
+const pausedNotice = $<HTMLElement>('paused-notice')
 const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
 
 function loadSettings(): Settings {
@@ -69,6 +70,8 @@ interface Running {
   /** True once a stopped sitting has faded out. */
   released(): boolean
   error(): string | null
+  /** A problem to show while the sitting runs, if any. */
+  warning(): string | null
   /** Free the engine's resources once the sitting is over. */
   finish(): void
 }
@@ -77,7 +80,8 @@ interface Running {
 async function beginWebAudio(settings: Settings): Promise<Running> {
   // Created and resumed inside the tap, as iOS requires.
   const ctx = new AudioContext()
-  await unlockAudio(ctx, document)
+  const silence = await unlockAudio(ctx, document)
+  const watch = keepAudioRunning(ctx, document)
   const session = new Session(ctx, createSynthBell(DEFAULT_BOWL), settings)
   const lock = keepAwake(navigator, document)
   session.start()
@@ -94,8 +98,11 @@ async function beginWebAudio(settings: Settings): Promise<Running> {
     tick() {},
     released: () => stoppedAt !== null && ctx.currentTime >= stoppedAt + RELEASE_S,
     error: () => null,
+    warning: () => (ctx.state === 'running' ? null : 'The phone paused the sound. Later bells may be late or missing.'),
     finish() {
       lock.release()
+      watch.release()
+      silence.release()
       ctx.close().catch(() => {})
     },
   }
@@ -110,6 +117,9 @@ function frame() {
   const state = running.state()
   countdown.textContent = formatRemaining(running.remainingS())
   leadIn.hidden = state !== 'settling'
+  const warning = running.warning()
+  pausedNotice.hidden = warning === null
+  pausedNotice.textContent = warning ?? ''
   const lead = running.leadInS()
   if (lead > 0) leadInTime.textContent = formatRemaining(lead)
   if (state === 'done' || (state === 'stopped' && running.released())) {

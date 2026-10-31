@@ -94,6 +94,11 @@ export function createSynthBell(params: BowlParams): Bell {
     return {
       endsAt,
       release(t: number) {
+        if (t <= at) {
+          // Not struck yet: it must not sound at all.
+          for (const osc of oscillators) osc.stop(t)
+          return
+        }
         out.gain.cancelScheduledValues(t)
         out.gain.setValueAtTime(1, t)
         out.gain.linearRampToValueAtTime(0, t + RELEASE_S)
