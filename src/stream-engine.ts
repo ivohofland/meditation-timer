@@ -6,7 +6,7 @@ import { StreamSession } from './stream-session'
 let audio: HTMLAudioElement | null = null
 
 /** Where the session's playlist comes from: built in the page, or served. */
-export type PlaylistSource = 'page' | 'server'
+export type PlaylistSource = 'page' | 'data' | 'server'
 
 export const HLS_TYPE = 'application/vnd.apple.mpegurl'
 
@@ -15,7 +15,7 @@ export const playsHls = (): boolean => document.createElement('audio').canPlayTy
 
 function playlistSource(): PlaylistSource {
   const el = document.getElementById('playlist-source') as HTMLSelectElement | null
-  return el?.value === 'page' ? 'page' : 'server'
+  return el?.value === 'page' || el?.value === 'data' ? el.value : 'server'
 }
 
 /**
@@ -29,9 +29,13 @@ export function beginStream(settings: Settings) {
 
   let blobUrl: string | null = null
   let url: string
-  if (playlistSource() === 'page') {
+  const source = playlistSource()
+  if (source === 'page') {
     const m3u8 = buildPlaylist(tl, `${location.origin}/stream/`)
     url = blobUrl = URL.createObjectURL(new Blob([m3u8], { type: HLS_TYPE }))
+  } else if (source === 'data') {
+    const m3u8 = buildPlaylist(tl, `${location.origin}/stream/`)
+    url = `data:${HLS_TYPE};base64,${btoa(m3u8)}`
   } else {
     const q = new URLSearchParams({
       total: String(settings.totalMinutes),
