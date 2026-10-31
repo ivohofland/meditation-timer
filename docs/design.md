@@ -120,7 +120,7 @@ in a high-quality format.
   Unsupported or refused: the timer works anyway.
 - **The running screen is dark.** The screen stays on during the sitting,
   often in a dim room; a bright page is the wrong thing to stare past.
-- **Stopping early fades.** Every sounding voice fades out over 0.3 s instead
+- **Stopping early fades.** Every sounding voice fades out over 1.5 s instead
   of stopping dead, which would click.
 - **The session ends after the last tail.** The page releases the wake lock
   and closes the audio context only once the last end strike has rung out.

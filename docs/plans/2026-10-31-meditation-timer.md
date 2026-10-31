@@ -17,7 +17,7 @@
 - Interval strikes are strictly before the end: `t < total`.
 - End: 3 full strikes, `END_GAP_S = 6` seconds apart, the first at `total`.
 - A voice stops at `at + 1.5 × t60S` (−90 dB), never earlier, except on release.
-- Release (stopping early) fades each sounding voice over `RELEASE_S = 0.3` seconds.
+- Release (stopping early) fades each sounding voice over `RELEASE_S = 1.5` seconds.
 - Settings: `totalMinutes` integer 1–180; `intervalMinutes` integer 1–60 or `null`; `startBell` boolean, default `true`.
 - Copy is plain: "Duration", "Bell every", "minutes", "Off", "Start with a bell", "Begin", "Stop". No religious or tradition-specific terms. No history, streaks or stats.
 - Settings screen uses fair.yoga's colors: cream `#F7F4EF` page, teal `#1A5653` primary, brown `#6B5B4E` text, Georgia headings, system sans body. Running screen near-black `#111` with countdown in `#6B6B6B`. No transitions.
@@ -136,7 +136,7 @@ test.each([
   - `interface Partial { ratio: number; gain: number; t60Factor: number }`
   - `interface BowlParams { fundamentalHz: number; t60S: number; beatHz: number; partials: readonly Partial[] }`
   - `const DEFAULT_BOWL: BowlParams` = `{ fundamentalHz: 220, t60S: 30, beatHz: 1.5, partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.71, gain: 0.5, t60Factor: 0.5 }, { ratio: 5.4, gain: 0.25, t60Factor: 0.3 }] }`
-  - `const SOFT = { gain: 0.5, t60Factor: 0.6 }`, `const ATTACK_S = 0.005`, `const RELEASE_S = 0.3`
+  - `const SOFT = { gain: 0.5, t60Factor: 0.6 }`, `const ATTACK_S = 0.005`, `const RELEASE_S = 1.5`
   - `voiceEnd(at: number, t60S: number): number` → `at + 1.5 * t60S`
   - `createSynthBell(params: BowlParams): Bell`
 
