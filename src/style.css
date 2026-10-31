@@ -47,6 +47,33 @@ html, body {
 }
 @media (min-width: 640px) { .page { padding: 64px 24px; } }
 
+/* The timer's settings screen: one calm column, the signature at the bottom. */
+#settings-screen {
+  max-width: 26rem;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 48px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+#settings-screen .content { align-self: center; display: grid; gap: 24px; }
+.intro h1 { margin: 0 0 8px; }
+.lede { margin: 0; color: var(--color-brown-light); }
+.action { display: grid; gap: 12px; justify-items: center; }
+.action .button.wide { margin-top: 0; }
+.hint { text-align: center; }
+
+.made-by {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-brown-light);
+}
+
 h1 {
   font-family: var(--font-heading);
   font-weight: 700;
@@ -139,14 +166,12 @@ button {
 .button.secondary:hover { background: var(--color-teal-tint); }
 .button.wide { width: 100%; margin-top: 24px; }
 
-.notice { margin: 16px 0 0; font-size: 14px; color: #A24E4E; }
+.notice { margin: 0; font-size: 14px; color: #A24E4E; text-align: center; }
 .footer { margin-top: 40px; font-size: 13px; color: var(--color-brown-light); }
 .footer a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; }
 .footer a:hover { color: var(--color-teal); }
-.hint { margin-bottom: 0; }
-.made-by { margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .wordmark { display: inline-flex; text-decoration: none; }
-.wordmark svg { height: 20px; width: auto; display: block; }
+.wordmark svg { height: 22px; width: auto; display: block; }
 .wordmark:hover svg { opacity: 0.8; }
 
 /* ---------- Running screen ---------- */

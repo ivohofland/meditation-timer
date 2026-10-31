@@ -10,47 +10,56 @@
   </head>
   <body>
     <main class="page" id="settings-screen">
-      <h1>Meditation timer</h1>
-      <form id="settings" class="card">
-        <label class="field">
-          <span class="label">Duration</span>
-          <span class="with-unit">
-            <input id="duration" name="duration" type="number" inputmode="numeric" min="1" max="180" step="1" required />
-            <span>minutes</span>
-          </span>
-        </label>
-        <label class="field">
-          <span class="label">Bell every</span>
-          <select id="interval" name="interval">
-            <option value="">Off</option>
-            <option value="1">1 minute</option>
-            <option value="2">2 minutes</option>
-            <option value="3">3 minutes</option>
-            <option value="5">5 minutes</option>
-            <option value="10">10 minutes</option>
-            <option value="15">15 minutes</option>
-            <option value="20">20 minutes</option>
-            <option value="30">30 minutes</option>
-          </select>
-        </label>
-        <label class="check">
-          <input id="start-bell" name="startBell" type="checkbox" />
-          <span>Start with a bell <span class="caption" id="start-bell-note">after 20 seconds to settle in</span></span>
-        </label>
-        <p class="caption">Three bells to end.</p>
-      </form>
-      <button class="button wide" id="begin" type="submit" form="settings">Begin</button>
-      <p class="notice" id="notice" role="status" hidden></p>
-      <p class="footer hint" id="hint">Leave this page open while you sit.</p>
-      <p class="footer made-by">
-        Made by the people behind
+      <div class="content">
+        <header class="intro">
+          <h1>Meditation timer</h1>
+          <p class="lede">Set how long you sit. A light bell every few minutes, if you like; three bells to end.</p>
+        </header>
+
+        <form id="settings" class="card">
+          <label class="field">
+            <span class="label">Duration</span>
+            <span class="with-unit">
+              <input id="duration" name="duration" type="number" inputmode="numeric" min="1" max="180" step="1" required />
+              <span>minutes</span>
+            </span>
+          </label>
+          <label class="field">
+            <span class="label">Bell every</span>
+            <select id="interval" name="interval">
+              <option value="">Off</option>
+              <option value="1">1 minute</option>
+              <option value="2">2 minutes</option>
+              <option value="3">3 minutes</option>
+              <option value="5">5 minutes</option>
+              <option value="10">10 minutes</option>
+              <option value="15">15 minutes</option>
+              <option value="20">20 minutes</option>
+              <option value="30">30 minutes</option>
+            </select>
+          </label>
+          <label class="check">
+            <input id="start-bell" name="startBell" type="checkbox" />
+            <span>Start with a bell <span class="caption" id="start-bell-note">after 20 seconds to settle in</span></span>
+          </label>
+        </form>
+
+        <div class="action">
+          <button class="button wide" id="begin" type="submit" form="settings">Begin</button>
+          <p class="caption hint" id="hint">Leave this page open while you sit.</p>
+          <p class="notice" id="notice" role="status" hidden></p>
+        </div>
+      </div>
+
+      <footer class="made-by">
+        <span>Made by the people behind</span>
         <a class="wordmark" href="https://fair.yoga" aria-label="fair.yoga">
           <!-- fair.yoga's wordmark (fair.yoga repo, docs/design_handoff_fairyoga/assets/logo.svg) -->
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 56" role="img" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 56" aria-hidden="true">
             <text x="0" y="43" font-family="Georgia, 'Times New Roman', serif" font-weight="400" font-size="56" letter-spacing="-0.6" fill="#2D2D2D">fair<tspan font-size="70" fill="#1A5653">.</tspan>yoga</text>
           </svg>
         </a>
-      </p>
+      </footer>
     </main>
 
     <section class="running-screen" id="running-screen" hidden aria-live="off">
