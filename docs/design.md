@@ -57,13 +57,17 @@ With your eyes closed you can count, not read.
 
 | Moment | Signal |
 |---|---|
-| Start (optional, on by default) | 1 full strike |
+| Start (optional, on by default) | 1 full strike, 20 s after Begin |
 | Every *x* minutes | 1 soft strike |
 | End | 3 full strikes, 6 s apart, each left to ring |
 
 This follows the practice these timers borrow from: in Zen and Plum Village
 traditions a single bell marks every transition, and the number of strikes
-says which one. The soft strike is about half the volume and rings shorter;
+says which one. The start bell waits 20 seconds after Begin, time to put the
+phone down and settle; the duration is timed from that bell. The settings
+screen says so beside the option, and the running screen counts the 20
+seconds down ("First bell in 0:20"). Without a start bell the sitting begins
+at once. The soft strike is about half the volume and rings shorter;
 it tells you where you are without pulling you out.
 
 **Copy stays plain.** "Bell every 5 minutes", "Three bells to end". No
