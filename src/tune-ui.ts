@@ -9,15 +9,15 @@ const sounds: { full: Editable; soft: Editable } = { full: editable(DEFAULT_BOWL
 /** Starting points for the ting, to compare by ear. The last partial of most is a short strike transient. */
 const TING_PRESETS: Record<string, BowlParams> = {
   'Small bell': {
-    fundamentalHz: 1568, t60S: 5, beatHz: 0, level: 0.4,
+    fundamentalHz: 1568, t60S: 3, beatHz: 0, level: 0.4,
     partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.32, gain: 0.5, t60Factor: 0.6 }, { ratio: 4.25, gain: 0.3, t60Factor: 0.35 }, { ratio: 6.63, gain: 0.25, t60Factor: 0.08 }],
   },
   Tingsha: {
-    fundamentalHz: 1320, t60S: 8, beatHz: 5, level: 0.4,
+    fundamentalHz: 1320, t60S: 5, beatHz: 5, level: 0.4,
     partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.61, gain: 0.7, t60Factor: 0.6 }, { ratio: 4.92, gain: 0.4, t60Factor: 0.3 }, { ratio: 7.4, gain: 0.25, t60Factor: 0.05 }],
   },
   Glass: {
-    fundamentalHz: 1046, t60S: 4, beatHz: 0.8, level: 0.45,
+    fundamentalHz: 1046, t60S: 2.5, beatHz: 0.8, level: 0.45,
     partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.76, gain: 0.25, t60Factor: 0.5 }, { ratio: 5.4, gain: 0.1, t60Factor: 0.25 }],
   },
   Current: DEFAULT_TING,
