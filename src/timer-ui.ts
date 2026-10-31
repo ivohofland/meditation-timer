@@ -137,6 +137,8 @@ let starting = false
 
 form.addEventListener('submit', async event => {
   event.preventDefault()
+  // Begin again while the last sitting is still fading: let it go now.
+  if (active?.running.state() === 'stopped') finish()
   if (active || starting) return
   const settings = readForm()
   if (!settings) { form.reportValidity(); return }
@@ -154,7 +156,15 @@ form.addEventListener('submit', async event => {
   active.frame = requestAnimationFrame(frame)
 })
 
-stop.addEventListener('click', () => active?.running.stop())
+// Back to the settings at once; the sound fades out underneath and the frame
+// loop frees the engine once it has.
+stop.addEventListener('click', () => {
+  if (!active) return
+  active.running.stop()
+  showRunning(false)
+  begin.disabled = false
+  begin.focus()
+})
 
 fillForm(loadSettings())
 $<HTMLElement>('start-bell-note').textContent = `after ${START_DELAY_S} seconds to settle in`
