@@ -39,6 +39,7 @@ export function beginStream(settings: Settings) {
     tick: () => session.tick(),
     released: () => session.released(),
     error: () => session.error(),
+    warning: () => null,
     finish() {
       el.pause()
       el.removeAttribute('src')

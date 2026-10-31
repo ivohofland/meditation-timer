@@ -70,3 +70,37 @@ test('a refused request is swallowed', async () => {
   process.off('unhandledRejection', onUnhandled)
   expect(onUnhandled).not.toHaveBeenCalled()
 })
+
+import { keepAudioRunning, unlockAudio } from './platform'
+
+function fakeAudioDoc() {
+  const el = { src: '', loop: false, playsInline: false, setAttribute: vi.fn(), play: vi.fn(async () => {}), pause: vi.fn() }
+  const { doc, fire } = fakeDoc()
+  ;(doc as unknown as { createElement: () => typeof el }).createElement = () => el
+  return { el, doc, fire }
+}
+
+test('unlockAudio returns a handle that stops the silent loop', async () => {
+  const { el, doc } = fakeAudioDoc()
+  const ctx = { resume: vi.fn(async () => {}) } as unknown as AudioContext
+  const silence = await unlockAudio(ctx, doc)
+  expect(el.play).toHaveBeenCalled()
+  silence.release()
+  expect(el.pause).toHaveBeenCalled()
+})
+
+test('keepAudioRunning resumes a suspended context when the page is shown again', () => {
+  const { doc, fire } = fakeDoc()
+  const ctx = { state: 'running', resume: vi.fn(async () => {}) }
+  const watch = keepAudioRunning(ctx as unknown as AudioContext, doc)
+  fire('visible')
+  expect(ctx.resume).not.toHaveBeenCalled()
+  ctx.state = 'suspended'
+  fire('hidden')
+  expect(ctx.resume).not.toHaveBeenCalled()
+  fire('visible')
+  expect(ctx.resume).toHaveBeenCalledTimes(1)
+  watch.release()
+  fire('visible')
+  expect(ctx.resume).toHaveBeenCalledTimes(1)
+})

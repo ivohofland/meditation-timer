@@ -59,9 +59,10 @@ let silence: HTMLAudioElement | null = null
 /**
  * Call inside the user's tap. Resumes the context and starts a looping silent
  * <audio> element, which moves the page into the media-playback category so
- * the iPhone silent switch does not mute Web Audio.
+ * the iPhone silent switch does not mute Web Audio. Release the handle when
+ * the sitting is over, so nothing plays on after it.
  */
-export async function unlockAudio(ctx: AudioContext, doc: Document): Promise<void> {
+export async function unlockAudio(ctx: AudioContext, doc: Document): Promise<{ release(): void }> {
   if (!silence) {
     silence = doc.createElement('audio')
     silence.src = silentWav()
@@ -69,6 +70,20 @@ export async function unlockAudio(ctx: AudioContext, doc: Document): Promise<voi
     silence.setAttribute('playsinline', '')
     ;(silence as HTMLAudioElement & { playsInline?: boolean }).playsInline = true
   }
-  const playing = silence.play().catch(() => {})
+  const el = silence
+  const playing = el.play().catch(() => {})
   await Promise.all([ctx.resume().catch(() => {}), playing])
+  return { release: () => el.pause() }
+}
+
+/**
+ * Resumes the context when the page is shown again: iOS suspends or interrupts
+ * Web Audio while the phone is locked or another app is in front.
+ */
+export function keepAudioRunning(ctx: AudioContext, doc: Document): { release(): void } {
+  const onVisibility = () => {
+    if (doc.visibilityState === 'visible' && ctx.state !== 'running') ctx.resume().catch(() => {})
+  }
+  doc.addEventListener('visibilitychange', onVisibility)
+  return { release: () => doc.removeEventListener('visibilitychange', onVisibility) }
 }

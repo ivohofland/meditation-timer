@@ -108,3 +108,12 @@ test('release fades over RELEASE_S and stops the oscillators after it', () => {
   const out = gains.find(g => g.calls.some(c => c[0] === 'cancel'))!
   expect(out.calls).toContainEqual(['linear', 0, 10 + RELEASE_S])
 })
+
+test('release before the strike sounds stops it unheard', () => {
+  const { ctx, oscillators, gains } = fakeContext()
+  const v = createSynthBell(DEFAULT_BOWL)(ctx, 20, 'full')
+  v.release(19.5)
+  expect(oscillators.every(o => o.stoppedAt === 19.5)).toBe(true)
+  const out = gains.find(g => g.calls.some(c => c[0] === 'cancel'))
+  expect(out?.calls ?? []).not.toContainEqual(['linear', 0, 19.5 + RELEASE_S])
+})
