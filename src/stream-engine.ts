@@ -22,7 +22,15 @@ export function beginStream(settings: Settings) {
   const url = `data:${HLS_TYPE};base64,${btoa(m3u8)}`
 
   if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({ title: 'Meditation timer', artist: `${settings.totalMinutes} minutes` })
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Meditation timer',
+      artist: `${settings.totalMinutes} minutes`,
+      // fair.yoga's app icon (from its repo, public/icons), shown on the lock screen.
+      artwork: [
+        { src: '/artwork/fair-yoga-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/artwork/fair-yoga-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+    })
   }
 
   const el = audio
