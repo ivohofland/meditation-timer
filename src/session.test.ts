@@ -22,7 +22,7 @@ test('start schedules every planned strike once, offset by t0', () => {
   const s = new Session(ctx, bell, settings1min)
   s.start()
   expect(calls.map(([at, st]) => [Number(at.toFixed(6)), st]))
-    .toEqual([[2.1, 'full'], [62.1, 'full'], [68.1, 'full'], [74.1, 'full']])
+    .toEqual([[22.1, 'full'], [82.1, 'full'], [88.1, 'full'], [94.1, 'full']])
 })
 
 test('a second start does nothing', () => {
@@ -35,10 +35,11 @@ test('a second start does nothing', () => {
 test('state and remaining follow the clock', () => {
   const { ctx, clock, bell } = fakes({ currentTime: 0 })
   const s = new Session(ctx, bell, settings1min)
-  expect(s.state()).toBe('idle'); expect(s.remainingS()).toBe(60)
+  expect(s.state()).toBe('idle'); expect(s.remainingS()).toBe(60); expect(s.leadInS()).toBe(20)
   s.start()
-  clock.currentTime = 30.1; expect(s.state()).toBe('running'); expect(s.remainingS()).toBeCloseTo(30)
-  clock.currentTime = 61; expect(s.state()).toBe('ringing-out'); expect(s.remainingS()).toBe(0)
+  clock.currentTime = 10; expect(s.state()).toBe('settling'); expect(s.remainingS()).toBe(60); expect(s.leadInS()).toBeCloseTo(10.1)
+  clock.currentTime = 50.1; expect(s.state()).toBe('running'); expect(s.remainingS()).toBeCloseTo(30); expect(s.leadInS()).toBe(0)
+  clock.currentTime = 81; expect(s.state()).toBe('ringing-out'); expect(s.remainingS()).toBe(0)
   clock.currentTime = 200; expect(s.state()).toBe('done')
 })
 
@@ -46,10 +47,18 @@ test('stop during ring-out releases only voices still sounding', () => {
   const { ctx, clock, bell, voices } = fakes({ currentTime: 0 })
   const s = new Session(ctx, bell, settings1min)
   s.start()
-  clock.currentTime = 70
+  clock.currentTime = 90
   s.stop()
-  expect(voices.map(v => v.release.mock.calls)).toEqual([[], [[70]], [[70]], [[70]]])
+  expect(voices.map(v => v.release.mock.calls)).toEqual([[], [[90]], [[90]], [[90]]])
   expect(s.state()).toBe('stopped')
+})
+
+test('without a start bell there is no lead-in', () => {
+  const { ctx, clock, bell } = fakes({ currentTime: 0 })
+  const s = new Session(ctx, bell, { totalMinutes: 1, intervalMinutes: null, startBell: false })
+  expect(s.leadInS()).toBe(0)
+  s.start()
+  clock.currentTime = 0.2; expect(s.state()).toBe('running')
 })
 
 test('stop after done does nothing', () => {

@@ -1,11 +1,18 @@
-import { planStrikes, type Strike } from './strikes'
+import { planStrikes, sittingStartS, START_DELAY_S, type Strike } from './strikes'
 
 const full = (at: number): Strike => ({ at, strength: 'full' })
 const soft = (at: number): Strike => ({ at, strength: 'soft' })
 
 test('start bell, no interval', () => {
   expect(planStrikes({ totalMinutes: 10, intervalMinutes: null, startBell: true }))
-    .toEqual([full(0), full(600), full(606), full(612)])
+    .toEqual([full(20), full(620), full(626), full(632)])
+})
+test('the start bell waits START_DELAY_S, and the sitting is timed from it', () => {
+  expect(START_DELAY_S).toBe(20)
+  expect(sittingStartS({ totalMinutes: 5, intervalMinutes: 1, startBell: true })).toBe(20)
+  expect(sittingStartS({ totalMinutes: 5, intervalMinutes: 1, startBell: false })).toBe(0)
+  expect(planStrikes({ totalMinutes: 3, intervalMinutes: 1, startBell: true }))
+    .toEqual([full(20), soft(80), soft(140), full(200), full(206), full(212)])
 })
 test('no start bell', () => {
   expect(planStrikes({ totalMinutes: 1, intervalMinutes: null, startBell: false }))

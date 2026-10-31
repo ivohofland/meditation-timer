@@ -2,6 +2,7 @@ import { formatRemaining } from './format'
 import { keepAwake, unlockAudio } from './platform'
 import { Session } from './session'
 import { DEFAULT_SETTINGS, parseSettings, type Settings } from './settings'
+import { START_DELAY_S } from './strikes'
 import { createSynthBell, DEFAULT_BOWL, RELEASE_S } from './synth-bell'
 
 const STORAGE_KEY = 'meditation-timer:settings'
@@ -15,6 +16,8 @@ const begin = $<HTMLButtonElement>('begin')
 const settingsScreen = $<HTMLElement>('settings-screen')
 const runningScreen = $<HTMLElement>('running-screen')
 const countdown = $<HTMLElement>('countdown')
+const leadIn = $<HTMLElement>('lead-in')
+const leadInTime = $<HTMLElement>('lead-in-time')
 const stop = $<HTMLButtonElement>('stop')
 const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
 
@@ -66,6 +69,9 @@ function frame() {
   const { ctx, session } = active
   const state = session.state()
   countdown.textContent = formatRemaining(session.remainingS())
+  const lead = session.leadInS()
+  leadIn.hidden = !(state === 'settling')
+  if (lead > 0) leadInTime.textContent = formatRemaining(lead)
   const finished = state === 'done' || (state === 'stopped' && active.stoppedAt !== null && ctx.currentTime >= active.stoppedAt + RELEASE_S)
   if (finished) {
     finish()
@@ -116,3 +122,4 @@ stop.addEventListener('click', () => {
 })
 
 fillForm(loadSettings())
+$<HTMLElement>('start-bell-note').textContent = `after ${START_DELAY_S} seconds to settle in`

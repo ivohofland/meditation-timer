@@ -164,6 +164,15 @@ body.running { background: var(--night); color: var(--night-text); }
   letter-spacing: -0.02em;
   color: var(--night-text);
 }
+.clock { display: grid; justify-items: center; gap: 8px; }
+.lead-in {
+  margin: 0;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--night-text);
+}
+.check .caption { display: block; }
+
 .stop {
   height: var(--control-height);
   padding: 0 32px;
