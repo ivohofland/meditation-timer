@@ -41,7 +41,16 @@
       </form>
       <button class="button wide" id="begin" type="submit" form="settings">Begin</button>
       <p class="notice" id="notice" role="status" hidden></p>
-      <p class="footer"><span id="hint">Leave this page open while you sit.</span> Made by the people behind <a href="https://fair.yoga">fair.yoga</a>.</p>
+      <p class="footer hint" id="hint">Leave this page open while you sit.</p>
+      <p class="footer made-by">
+        Made by the people behind
+        <a class="wordmark" href="https://fair.yoga" aria-label="fair.yoga">
+          <!-- fair.yoga's wordmark (fair.yoga repo, docs/design_handoff_fairyoga/assets/logo.svg) -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 56" role="img" aria-hidden="true">
+            <text x="0" y="43" font-family="Georgia, 'Times New Roman', serif" font-weight="400" font-size="56" letter-spacing="-0.6" fill="#2D2D2D">fair<tspan font-size="70" fill="#1A5653">.</tspan>yoga</text>
+          </svg>
+        </a>
+      </p>
     </main>
 
     <section class="running-screen" id="running-screen" hidden aria-live="off">

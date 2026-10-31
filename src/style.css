@@ -143,6 +143,11 @@ button {
 .footer { margin-top: 40px; font-size: 13px; color: var(--color-brown-light); }
 .footer a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; }
 .footer a:hover { color: var(--color-teal); }
+.hint { margin-bottom: 0; }
+.made-by { margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wordmark { display: inline-flex; text-decoration: none; }
+.wordmark svg { height: 20px; width: auto; display: block; }
+.wordmark:hover svg { opacity: 0.8; }
 
 /* ---------- Running screen ---------- */
 
