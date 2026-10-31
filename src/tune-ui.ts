@@ -6,6 +6,23 @@ type Editable = Omit<BowlParams, 'partials'> & { partials: BowlPartial[] }
 const editable = (p: BowlParams): Editable => ({ ...p, partials: p.partials.map(x => ({ ...x })) })
 const sounds: { full: Editable; soft: Editable } = { full: editable(DEFAULT_BOWL), soft: editable(DEFAULT_TING) }
 
+/** Starting points for the ting, to compare by ear. The last partial of most is a short strike transient. */
+const TING_PRESETS: Record<string, BowlParams> = {
+  'Small bell': {
+    fundamentalHz: 1568, t60S: 5, beatHz: 0, level: 0.4,
+    partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.32, gain: 0.5, t60Factor: 0.6 }, { ratio: 4.25, gain: 0.3, t60Factor: 0.35 }, { ratio: 6.63, gain: 0.25, t60Factor: 0.08 }],
+  },
+  Tingsha: {
+    fundamentalHz: 1320, t60S: 8, beatHz: 5, level: 0.4,
+    partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.61, gain: 0.7, t60Factor: 0.6 }, { ratio: 4.92, gain: 0.4, t60Factor: 0.3 }, { ratio: 7.4, gain: 0.25, t60Factor: 0.05 }],
+  },
+  Glass: {
+    fundamentalHz: 1046, t60S: 4, beatHz: 0.8, level: 0.45,
+    partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.76, gain: 0.25, t60Factor: 0.5 }, { ratio: 5.4, gain: 0.1, t60Factor: 0.25 }],
+  },
+  Current: DEFAULT_TING,
+}
+
 let ctx: AudioContext | null = null
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
@@ -56,20 +73,38 @@ function section(title: string, constName: string, p: Editable, ranges: { hz: [n
   render()
 }
 
-section('Bowl (start and end)', 'DEFAULT_BOWL', sounds.full, { hz: [150, 500], t60: [5, 60] })
-section('Ting (every few minutes)', 'DEFAULT_TING', sounds.soft, { hz: [600, 4000], t60: [0.5, 10] })
+function renderSections() {
+  document.getElementById('sounds')!.replaceChildren()
+  section('Bowl (start and end)', 'DEFAULT_BOWL', sounds.full, { hz: [150, 500], t60: [5, 60] })
+  section('Ting (every few minutes)', 'DEFAULT_TING', sounds.soft, { hz: [600, 4000], t60: [0.5, 15] })
+}
+renderSections()
+
+async function play(kind: 'soft' | 'full' | 'end') {
+  ctx ??= new AudioContext()
+  await unlockAudio(ctx, document)
+  const bell = createSynthBell(structuredClone(sounds) as Sounds)
+  const at = ctx.currentTime + 0.05
+  if (kind === 'end') {
+    for (let n = 0; n < END_STRIKES; n++) bell(ctx, at + n * END_GAP_S, 'full')
+  } else {
+    bell(ctx, at, kind)
+  }
+}
+
+const presets = document.getElementById('ting-presets')!
+for (const [name, preset] of Object.entries(TING_PRESETS)) {
+  const b = el('button', 'button secondary', name)
+  b.type = 'button'
+  b.addEventListener('click', () => {
+    sounds.soft = editable(preset)
+    renderSections()
+    void play('soft')
+  })
+  presets.append(b)
+}
 
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-play]')) {
-  button.addEventListener('click', async () => {
-    ctx ??= new AudioContext()
-    await unlockAudio(ctx, document)
-    const bell = createSynthBell(structuredClone(sounds) as Sounds)
-    const at = ctx.currentTime + 0.05
-    const kind = button.dataset.play
-    if (kind === 'end') {
-      for (let n = 0; n < END_STRIKES; n++) bell(ctx, at + n * END_GAP_S, 'full')
-    } else {
-      bell(ctx, at, kind === 'soft' ? 'soft' : 'full')
-    }
-  })
+  const kind = button.dataset.play
+  button.addEventListener('click', () => void play(kind === 'end' ? 'end' : kind === 'soft' ? 'soft' : 'full'))
 }
