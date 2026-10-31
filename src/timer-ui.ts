@@ -2,6 +2,7 @@ import { formatRemaining } from './format'
 import { keepAudioRunning, keepAwake, unlockAudio } from './platform'
 import { type SessionState, Session } from './session'
 import { beginStream } from './stream-engine'
+import { chooseEngine, isAppleHandheld } from './engine'
 import { DEFAULT_SETTINGS, parseSettings, type Settings } from './settings'
 import { START_DELAY_S } from './strikes'
 import { createSynthBell, DEFAULT_SOUNDS, RELEASE_S } from './synth-bell'
@@ -143,6 +144,15 @@ function finish() {
   begin.focus()
 }
 
+const engine = chooseEngine({
+  appleHandheld: isAppleHandheld(navigator.userAgent, navigator.maxTouchPoints),
+  override: new URLSearchParams(location.search).get('engine'),
+})
+document.body.dataset.engine = engine
+$<HTMLElement>('hint').textContent = engine === 'stream'
+  ? 'You can lock your phone; the bells keep coming.'
+  : 'Leave this page open while you sit.'
+
 let starting = false
 
 form.addEventListener('submit', async event => {
@@ -158,7 +168,7 @@ form.addEventListener('submit', async event => {
   saveSettings(settings)
 
   // Called without an await before it: both engines must start inside the tap.
-  const running = await (document.body.dataset.engine === 'stream' ? beginStream(settings) : beginWebAudio(settings))
+  const running = await (engine === 'stream' ? beginStream(settings) : beginWebAudio(settings))
   active = { running, frame: 0 }
   starting = false
   showRunning(true)
