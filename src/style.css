@@ -139,6 +139,8 @@ button {
 .button.secondary:hover { background: var(--color-teal-tint); }
 .button.wide { width: 100%; margin-top: 24px; }
 
+.notice { margin: 16px 0 0; font-size: 14px; color: #A24E4E; }
+.compare { margin-top: 12px; }
 .footer { margin-top: 40px; font-size: 13px; color: var(--color-brown-light); }
 .footer a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; }
 .footer a:hover { color: var(--color-teal); }
