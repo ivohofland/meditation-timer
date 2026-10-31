@@ -39,19 +39,19 @@ export const DEFAULT_BOWL: BowlParams = {
 }
 
 /**
- * A short, high, quiet ting: marks the interval without pulling you out.
- * Halfway between a small bell and a tingsha; the last partial is the strike.
+ * A short, high, quiet ting, like a tingsha: marks the interval without pulling
+ * you out. Tuned by ear; the last partial is the strike.
  */
 export const DEFAULT_TING: BowlParams = {
-  fundamentalHz: 1444,
-  t60S: 4,
-  beatHz: 2.5,
+  fundamentalHz: 1320,
+  t60S: 5,
+  beatHz: 3,
   level: 0.4,
   partials: [
     { ratio: 1, gain: 1, t60Factor: 1 },
-    { ratio: 2.47, gain: 0.6, t60Factor: 0.6 },
-    { ratio: 4.59, gain: 0.35, t60Factor: 0.33 },
-    { ratio: 7.02, gain: 0.25, t60Factor: 0.07 },
+    { ratio: 2.61, gain: 0.7, t60Factor: 0.6 },
+    { ratio: 4.92, gain: 0.4, t60Factor: 0.3 },
+    { ratio: 7.4, gain: 0.25, t60Factor: 0.05 },
   ],
 }
 
