@@ -31,7 +31,7 @@ export const DEFAULT_BOWL: BowlParams = {
 
 export const SOFT = { gain: 0.5, t60Factor: 0.6 }
 export const ATTACK_S = 0.005
-export const RELEASE_S = 0.3
+export const RELEASE_S = 1.5
 /** Level of the beating mode relative to the fundamental. */
 export const BEAT_GAIN = 0.5
 /** Summed peak of a full strike, leaving headroom below 1. */
