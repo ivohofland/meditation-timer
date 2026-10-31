@@ -310,11 +310,49 @@ A plain page: sliders for `fundamentalHz` (150–500), `t60S` (5–60), `beatHz`
 
 ---
 
-### Task 7: Publish
+### Task 7: Publish at timer.fair.yoga
+
+Hosted on fair.yoga's VPS as static files served by Nginx: no Node process,
+no container. The box is shared; nothing that operates it is. The timer has
+its own Nginx site file, its own certificate, its own web root and its own
+deploy path, so a mistake on the timer's side cannot reach fair.yoga's
+deploy, config or certificate renewal.
 
 **Files:**
+- Create: `deploy/nginx.conf.example`, `deploy/DEPLOYMENT.md`
 - Modify: `README.md`
 
-- [ ] **Step 1:** Add to the README: how to run (`pnpm install`, `pnpm dev`, `pnpm test`, `pnpm build` → static `dist/`), and the tuning page.
-- [ ] **Step 2:** Host `dist/` at `timer.fair.yoga`. Where it is served from (fair.yoga's VPS behind its Nginx, or a static host) is the owner's call; no cookie is set with `Domain=.fair.yoga`, so the two origins stay independent.
-- [ ] **Step 3:** Commit `docs: running and building`.
+**Fixed values:**
+- Hostname `timer.fair.yoga`; web root `/var/www/timer.fair.yoga`, owned by `deploy`.
+- Nginx site file `/etc/nginx/sites-available/timer.fair.yoga`, symlinked into `sites-enabled`. fair.yoga's site file is not edited.
+- A separate Let's Encrypt certificate (`certbot certonly --webroot -w /var/www/timer.fair.yoga -d timer.fair.yoga`), not an expansion of the fair.yoga one, so a broken timer DNS record cannot fail fair.yoga's renewal.
+- Deploy: `pnpm build` locally, then `rsync -a --delete dist/ deploy@<vps>:/var/www/timer.fair.yoga/`. Manual until it has been proven; a CI job with its own forced-command key restricted to that directory comes later, if ever. Never through `fairyoga-deploy`.
+- No cookies at all, and none with `Domain=.fair.yoga`.
+
+- [ ] **Step 1: Write `deploy/nginx.conf.example`**, following fair.yoga's own example's two-phase shape (the port-80 block alone first, so certbot can issue before a `listen ... ssl` block exists):
+  - port 80: `location /.well-known/acme-challenge/ { root /var/www/timer.fair.yoga; }`, everything else `301` to HTTPS.
+  - port 443 (`http2 on`, IPv4 and IPv6 listeners), `root /var/www/timer.fair.yoga;`, `try_files $uri $uri.html =404;` so `/tune` serves `tune.html`.
+  - Headers, `always`:
+    - `Strict-Transport-Security "max-age=63072000; includeSubDomains"`
+    - `X-Content-Type-Options "nosniff"`
+    - `X-Frame-Options "DENY"`
+    - `Referrer-Policy "no-referrer"`
+    - `Permissions-Policy "screen-wake-lock=(self), camera=(), microphone=(), geolocation=()"`
+    - `Content-Security-Policy "default-src 'self'; media-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"` (`media-src data:` is the silent WAV from Task 4)
+  - Caching: `location /assets/ { add_header Cache-Control "public, max-age=31536000, immutable" always; }` (Vite's hashed files; repeat the security headers there, since an `add_header` in a `location` replaces the server-level ones). HTML: `Cache-Control "no-cache"`.
+
+- [ ] **Step 2: Write `deploy/DEPLOYMENT.md`** with the one-time setup, in order: DNS `A`/`AAAA` records for `timer` to the VPS's IPv4/IPv6; create the web root; install the port-80 block, `nginx -t`, reload; issue the certificate; install the 443 block, `nginx -t`, reload; confirm the existing certbot renewal hook in `/etc/letsencrypt/renewal-hooks/deploy/` reloads Nginx for every certificate, not only fair.yoga's (`certbot renew --dry-run` lists both). Then the deploy command, and a rollback (redeploy the previous commit's build).
+
+- [ ] **Step 3: Set it up on the VPS** following `DEPLOYMENT.md`. The owner runs the server steps or approves each one; nothing here touches fair.yoga's site file, container or deploy key.
+
+- [ ] **Step 4: Verify.**
+  - `curl -sI https://timer.fair.yoga` shows `200` and every header above; `curl -sI http://timer.fair.yoga` shows `301`.
+  - `curl -sI https://fair.yoga/api/health` and the fair.yoga homepage still answer as before.
+  - On a phone: the Task 6 manual check passes against the live URL (wake lock works, so the `Permissions-Policy` allows it; the silent-switch unlock works, so the CSP allows the `data:` audio).
+  - `sudo certbot renew --dry-run` succeeds for both certificates.
+
+- [ ] **Step 5: Update the README:** how to run (`pnpm install`, `pnpm dev`, `pnpm test`, `pnpm build` → static `dist/`), the tuning page, the live URL, and a pointer to `deploy/DEPLOYMENT.md`.
+
+- [ ] **Step 6: Commit** `docs: hosting at timer.fair.yoga`.
+
+A link from fair.yoga's footer to `timer.fair.yoga` is a change to the fair.yoga repo and goes through that repo's own process.

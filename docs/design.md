@@ -13,8 +13,18 @@ backend, no history.
 
 Not part of fair.yoga. fair.yoga is a business tool for teachers; a practice
 timer is a different product and would pull that app toward wellness-app
-territory. This repo is separate, linked from fair.yoga's footer, and intended
-to be hosted at `timer.fair.yoga`.
+territory. This repo is separate, linked from fair.yoga's footer, and hosted
+at `timer.fair.yoga`.
+
+## Hosting
+
+Static files on fair.yoga's own VPS, served by Nginx: no process, no
+container, negligible load. The hardware is shared; nothing that operates it
+is. The timer has its own Nginx site file, its own Let's Encrypt certificate,
+its own web root and its own deploy path, so a mistake on one side cannot
+break the other's deploy, config or certificate renewal. What is shared is
+uptime, which is acceptable for a free side tool. `timer.fair.yoga` is its own
+origin: no cookies, service workers or storage cross over.
 
 **Never:** session history, streaks, minutes-meditated totals, reminders,
 reward badges, or anything else that asks to be opened. The timer is a tool.
