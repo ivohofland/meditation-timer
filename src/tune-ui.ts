@@ -13,7 +13,7 @@ const TING_PRESETS: Record<string, BowlParams> = {
     partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.32, gain: 0.5, t60Factor: 0.6 }, { ratio: 4.25, gain: 0.3, t60Factor: 0.35 }, { ratio: 6.63, gain: 0.25, t60Factor: 0.08 }],
   },
   Tingsha: {
-    fundamentalHz: 1320, t60S: 5, beatHz: 5, level: 0.4,
+    fundamentalHz: 1320, t60S: 5, beatHz: 3, level: 0.4,
     partials: [{ ratio: 1, gain: 1, t60Factor: 1 }, { ratio: 2.61, gain: 0.7, t60Factor: 0.6 }, { ratio: 4.92, gain: 0.4, t60Factor: 0.3 }, { ratio: 7.4, gain: 0.25, t60Factor: 0.05 }],
   },
   Glass: {
