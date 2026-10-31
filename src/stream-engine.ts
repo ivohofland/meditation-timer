@@ -5,18 +5,10 @@ import { StreamSession } from './stream-session'
 
 let audio: HTMLAudioElement | null = null
 
-/** Where the session's playlist comes from: built in the page, or served. */
-export type PlaylistSource = 'page' | 'data' | 'server'
-
 export const HLS_TYPE = 'application/vnd.apple.mpegurl'
 
 /** Whether this browser plays HLS in a plain <audio> element. */
 export const playsHls = (): boolean => document.createElement('audio').canPlayType(HLS_TYPE) !== ''
-
-function playlistSource(): PlaylistSource {
-  const el = document.getElementById('playlist-source') as HTMLSelectElement | null
-  return el?.value === 'page' || el?.value === 'data' ? el.value : 'server'
-}
 
 /**
  * The stream engine: the whole sitting as one finished HLS stream through an
@@ -27,23 +19,10 @@ export function beginStream(settings: Settings) {
   audio.setAttribute('playsinline', '')
   const tl = timeline(settings, pieces as Pieces)
 
-  let blobUrl: string | null = null
-  let url: string
-  const source = playlistSource()
-  if (source === 'page') {
-    const m3u8 = buildPlaylist(tl, `${location.origin}/stream/`)
-    url = blobUrl = URL.createObjectURL(new Blob([m3u8], { type: HLS_TYPE }))
-  } else if (source === 'data') {
-    const m3u8 = buildPlaylist(tl, `${location.origin}/stream/`)
-    url = `data:${HLS_TYPE};base64,${btoa(m3u8)}`
-  } else {
-    const q = new URLSearchParams({
-      total: String(settings.totalMinutes),
-      interval: settings.intervalMinutes === null ? '' : String(settings.intervalMinutes),
-      start: settings.startBell ? '1' : '0',
-    })
-    url = `/stream/session.m3u8?${q}`
-  }
+  // The playlist travels in a data: link: iOS's player rejects blob: links, and
+  // this keeps hosting to static files. Piece links must be absolute in it.
+  const m3u8 = buildPlaylist(tl, `${location.origin}/stream/`)
+  const url = `data:${HLS_TYPE};base64,${btoa(m3u8)}`
 
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({ title: 'Meditation timer', artist: `${settings.totalMinutes} minutes` })
@@ -64,7 +43,6 @@ export function beginStream(settings: Settings) {
       el.pause()
       el.removeAttribute('src')
       el.load()
-      if (blobUrl) URL.revokeObjectURL(blobUrl)
     },
   })
 }
