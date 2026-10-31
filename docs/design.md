@@ -175,6 +175,9 @@ a stream of pre-encoded pieces avoids that.
 - **Bells must not overlap.** Pieces play one after another, so a bell's tail
   must end before the next bell: fine for intervals of a minute and up.
 - **No wake lock.** The screen may sleep; that is the point.
+- **Lock screen.** The system player shows "Meditation timer", the duration,
+  and fair.yoga's app icon as artwork (copied from fair.yoga's
+  `public/icons`).
 - **Stop cannot fade on iOS,** where a page cannot set media volume: the sound
   plays on for the release time, then stops.
 - **The system player shows the stream's length,** lead-in and ring-out
