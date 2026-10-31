@@ -139,9 +139,20 @@ in a high-quality format.
   suspends the page and its audio. The wake lock keeps the screen on instead.
   The stream version below keeps playing.
 
-## The stream version (being compared)
+## Two engines: the stream where it is needed
 
-A second engine, at `/stream.html`, plays the whole sitting as a finished HLS
+The page picks how to play a sitting when it loads. **Where it is needed**,
+on iPhone and iPad (which stop page audio when the phone locks), it plays the
+stream described below. **Everywhere else** it uses Web Audio as described
+above: exact timing, a real fade on Stop, nothing to download during the
+sitting, the screen kept on. Chrome rejects the stream's `data:` playlist, and
+Android is untested; Android Chrome generally keeps page audio playing in the
+background, so it may not need the stream at all. `?engine=stream` or
+`?engine=webaudio` forces either, for testing. The footer tells the sitter
+which applies: "You can lock your phone; the bells keep coming" or "Leave this
+page open while you sit."
+
+The stream engine plays the whole sitting as a finished HLS
 stream through an `<audio>` element. The system media player then keeps it
 going with the screen locked, the way a podcast does. Rendering the session as
 one uncompressed track was rejected earlier for memory (over 100 MB an hour);
@@ -170,8 +181,7 @@ a stream of pre-encoded pieces avoids that.
 
 Tested on an iPhone (2026-10-31): plays with the `data:` playlist, including a
 60-minute sitting with a bell every minute, and keeps playing on a locked
-screen. Still open: which engine `/` uses on which device, and whether the bell
-needs retuning for phone speakers (it sounded thinner on the phone; its 220 Hz
+screen. Still open: Android, and whether the bowl needs retuning for phone speakers (it sounded thinner on the phone; its 220 Hz
 fundamental sits below what small speakers reproduce well).
 
 ## Look

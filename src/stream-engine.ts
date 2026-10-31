@@ -7,9 +7,6 @@ let audio: HTMLAudioElement | null = null
 
 export const HLS_TYPE = 'application/vnd.apple.mpegurl'
 
-/** Whether this browser plays HLS in a plain <audio> element. */
-export const playsHls = (): boolean => document.createElement('audio').canPlayType(HLS_TYPE) !== ''
-
 /**
  * The stream engine: the whole sitting as one finished HLS stream through an
  * <audio> element. Synchronous up to play(), so it starts inside the tap.
