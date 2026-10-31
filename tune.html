@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <title>Tune the bell</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <h1>Tune the bell</h1>
+
+      <div class="buttons">
+        <button class="button" type="button" data-play="soft">Soft</button>
+        <button class="button" type="button" data-play="full">Full</button>
+        <button class="button secondary" type="button" data-play="end">End (three bells)</button>
+      </div>
+
+      <h2>Bowl</h2>
+      <div class="card" id="bowl"></div>
+
+      <h2>Partials</h2>
+      <div class="card" id="partials"></div>
+
+      <h2>Paste into DEFAULT_BOWL</h2>
+      <pre id="params"></pre>
+
+      <p class="footer"><a href="/">Back to the timer</a></p>
+    </main>
+    <script type="module" src="/src/tune-ui.ts"></script>
+  </body>
+</html>
