@@ -80,7 +80,7 @@ h2 {
   line-height: 1.4;
   color: var(--color-brown);
 }
-.caption { font-size: 13px; line-height: 1.4; color: var(--color-brown-light); }
+.caption { margin: 0; font-size: 13px; line-height: 1.4; color: var(--color-brown-light); }
 
 .with-unit { display: flex; align-items: center; gap: 12px; }
 
@@ -99,7 +99,8 @@ input[type="number"], select {
 }
 input[type="number"] { width: 6.5rem; }
 select {
-  min-width: 9rem;
+  justify-self: start;
+  min-width: 11rem;
   padding-right: 36px;
   background-image: linear-gradient(45deg, transparent 50%, var(--color-brown) 50%), linear-gradient(135deg, var(--color-brown) 50%, transparent 50%);
   background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%;
