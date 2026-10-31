@@ -1,6 +1,7 @@
 import { formatRemaining } from './format'
 import { keepAwake, unlockAudio } from './platform'
-import { Session } from './session'
+import { type SessionState, Session } from './session'
+import { beginStream } from './stream-engine'
 import { DEFAULT_SETTINGS, parseSettings, type Settings } from './settings'
 import { START_DELAY_S } from './strikes'
 import { createSynthBell, DEFAULT_BOWL, RELEASE_S } from './synth-bell'
@@ -19,6 +20,7 @@ const countdown = $<HTMLElement>('countdown')
 const leadIn = $<HTMLElement>('lead-in')
 const leadInTime = $<HTMLElement>('lead-in-time')
 const stop = $<HTMLButtonElement>('stop')
+const notice = $<HTMLElement>('notice')
 const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
 
 function loadSettings(): Settings {
@@ -56,24 +58,61 @@ function showRunning(running: boolean) {
   themeColor?.setAttribute('content', running ? '#111111' : '#F7F4EF')
 }
 
-let active: {
-  ctx: AudioContext
-  session: Session
-  lock: { release(): void }
-  frame: number
-  stoppedAt: number | null
-} | null = null
+/** A sitting in progress, whichever engine plays it. */
+interface Running {
+  state(): SessionState
+  remainingS(): number
+  leadInS(): number
+  stop(): void
+  /** Advance anything that runs per frame (the stream's fade). */
+  tick(): void
+  /** True once a stopped sitting has faded out. */
+  released(): boolean
+  error(): string | null
+  /** Free the engine's resources once the sitting is over. */
+  finish(): void
+}
+
+/** Web Audio: every strike scheduled on the audio clock at Begin. Keeps the screen on. */
+async function beginWebAudio(settings: Settings): Promise<Running> {
+  // Created and resumed inside the tap, as iOS requires.
+  const ctx = new AudioContext()
+  await unlockAudio(ctx, document)
+  const session = new Session(ctx, createSynthBell(DEFAULT_BOWL), settings)
+  const lock = keepAwake(navigator, document)
+  session.start()
+  let stoppedAt: number | null = null
+  return {
+    state: () => session.state(),
+    remainingS: () => session.remainingS(),
+    leadInS: () => session.leadInS(),
+    stop() {
+      if (stoppedAt !== null) return
+      session.stop()
+      stoppedAt = ctx.currentTime
+    },
+    tick() {},
+    released: () => stoppedAt !== null && ctx.currentTime >= stoppedAt + RELEASE_S,
+    error: () => null,
+    finish() {
+      lock.release()
+      ctx.close().catch(() => {})
+    },
+  }
+}
+
+let active: { running: Running; frame: number } | null = null
 
 function frame() {
   if (!active) return
-  const { ctx, session } = active
-  const state = session.state()
-  countdown.textContent = formatRemaining(session.remainingS())
-  const lead = session.leadInS()
-  leadIn.hidden = !(state === 'settling')
+  const { running } = active
+  running.tick()
+  const state = running.state()
+  countdown.textContent = formatRemaining(running.remainingS())
+  leadIn.hidden = state !== 'settling'
+  const lead = running.leadInS()
   if (lead > 0) leadInTime.textContent = formatRemaining(lead)
-  const finished = state === 'done' || (state === 'stopped' && active.stoppedAt !== null && ctx.currentTime >= active.stoppedAt + RELEASE_S)
-  if (finished) {
+  if (state === 'done' || (state === 'stopped' && running.released())) {
     finish()
     return
   }
@@ -83,9 +122,12 @@ function frame() {
 function finish() {
   if (!active) return
   cancelAnimationFrame(active.frame)
-  active.lock.release()
-  active.ctx.close().catch(() => {})
+  const { running } = active
   active = null
+  running.finish()
+  const error = running.error()
+  notice.hidden = error === null
+  notice.textContent = error ? `The sound stopped: ${error}` : ''
   showRunning(false)
   begin.disabled = false
   begin.focus()
@@ -100,26 +142,19 @@ form.addEventListener('submit', async event => {
   if (!settings) { form.reportValidity(); return }
   starting = true
   begin.disabled = true
+  notice.hidden = true
   saveSettings(settings)
 
-  // Created and resumed inside the tap, as iOS requires.
-  const ctx = new AudioContext()
-  await unlockAudio(ctx, document)
-
-  const session = new Session(ctx, createSynthBell(DEFAULT_BOWL), settings)
-  active = { ctx, session, lock: keepAwake(navigator, document), frame: 0, stoppedAt: null }
-  session.start()
+  // Called without an await before it: both engines must start inside the tap.
+  const running = await (document.body.dataset.engine === 'stream' ? beginStream(settings) : beginWebAudio(settings))
+  active = { running, frame: 0 }
   starting = false
   showRunning(true)
   stop.focus()
   active.frame = requestAnimationFrame(frame)
 })
 
-stop.addEventListener('click', () => {
-  if (!active || active.stoppedAt !== null) return
-  active.session.stop()
-  active.stoppedAt = active.ctx.currentTime
-})
+stop.addEventListener('click', () => active?.running.stop())
 
 fillForm(loadSettings())
 $<HTMLElement>('start-bell-note').textContent = `after ${START_DELAY_S} seconds to settle in`

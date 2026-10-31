@@ -1,0 +1,34 @@
+{
+  "silence": [
+    {
+      "uri": "silence-60.ts",
+      "nominalS": 60,
+      "durationS": 60.032
+    },
+    {
+      "uri": "silence-10.ts",
+      "nominalS": 10,
+      "durationS": 10.026667
+    },
+    {
+      "uri": "silence-1.ts",
+      "nominalS": 1,
+      "durationS": 1.024
+    }
+  ],
+  "soft": {
+    "uri": "soft.ts",
+    "nominalS": 27,
+    "durationS": 27.029333
+  },
+  "full": {
+    "uri": "full.ts",
+    "nominalS": 45,
+    "durationS": 45.034667
+  },
+  "end": {
+    "uri": "end.ts",
+    "nominalS": 57,
+    "durationS": 57.024
+  }
+}
