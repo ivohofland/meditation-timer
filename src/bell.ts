@@ -1,3 +1,4 @@
+/** 'full': the bowl, for start and end. 'soft': the interval's ting. */
 export type Strength = 'soft' | 'full'
 
 /** One sounding strike. */

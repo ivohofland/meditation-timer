@@ -1,5 +1,5 @@
 /**
- * Renders the stream's audio pieces from DEFAULT_BOWL and encodes them as
+ * Renders the stream's audio pieces from DEFAULT_SOUNDS and encodes them as
  * AAC in MPEG-TS, the format HLS players accept everywhere. Run after tuning:
  *   pnpm pieces
  * Needs ffmpeg and ffprobe on the PATH.
@@ -12,7 +12,7 @@ import type { Piece, Pieces } from '../src/playlist'
 import { renderStrikes } from '../src/render'
 import type { Strike } from '../src/strikes'
 import { END_GAP_S, END_STRIKES } from '../src/strikes'
-import { DEFAULT_BOWL, SOFT, voiceEnd } from '../src/synth-bell'
+import { DEFAULT_SOUNDS, voiceEnd } from '../src/synth-bell'
 
 const SAMPLE_RATE = 48000
 const root = resolve(import.meta.dirname, '..')
@@ -33,7 +33,7 @@ function wav(samples: Float32Array): Buffer {
 function encode(name: string, strikes: Strike[], nominalS: number, kbps = 96): Piece {
   const src = join(tmp, `${name}.wav`)
   const file = `${name}.ts`
-  writeFileSync(src, wav(renderStrikes(DEFAULT_BOWL, strikes, nominalS, SAMPLE_RATE)))
+  writeFileSync(src, wav(renderStrikes(DEFAULT_SOUNDS, strikes, nominalS, SAMPLE_RATE)))
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', src, '-c:a', 'aac', '-b:a', `${kbps}k`, '-ar', String(SAMPLE_RATE), '-ac', '1',
     '-muxdelay', '2', '-muxpreload', '0', '-f', 'mpegts', join(outDir, file)])
   // What the player decodes: every AAC frame, 1024 samples each (the container's
@@ -43,8 +43,8 @@ function encode(name: string, strikes: Strike[], nominalS: number, kbps = 96): P
   return { uri: file, nominalS, durationS }
 }
 
-const fullS = Math.ceil(voiceEnd(0, DEFAULT_BOWL.t60S))
-const softS = Math.ceil(voiceEnd(0, DEFAULT_BOWL.t60S * SOFT.t60Factor))
+const fullS = Math.ceil(voiceEnd(0, DEFAULT_SOUNDS.full.t60S))
+const softS = Math.ceil(voiceEnd(0, DEFAULT_SOUNDS.soft.t60S))
 const endStrikes = Array.from({ length: END_STRIKES }, (_, n): Strike => ({ at: n * END_GAP_S, strength: 'full' }))
 
 const pieces: Pieces = {
