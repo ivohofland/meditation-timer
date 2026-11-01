@@ -199,6 +199,8 @@ body.running { background: var(--night); color: var(--night-text); }
 .clock { display: grid; justify-items: center; gap: 8px; }
 .lead-in {
   margin: 0;
+  line-height: 1.5;
+  min-height: 1.5em;
   font-size: 16px;
   font-variant-numeric: tabular-nums;
   color: var(--night-text);
@@ -216,6 +218,9 @@ body.running { background: var(--night); color: var(--night-text); }
 .stop:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--night-text); }
 
 [hidden] { display: none !important; }
+/* The lines above and below the countdown keep their room when hidden, so
+   the countdown does not move when the lead-in ends or a notice comes. */
+.clock > .lead-in[hidden] { display: block !important; visibility: hidden; }
 
 /* ---------- Tuning page ---------- */
 
