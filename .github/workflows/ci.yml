@@ -1,0 +1,90 @@
+name: CI
+
+# Everything runs on everything: `ci` is the required status check on main,
+# and a required check that never runs never reports.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push supersedes the run for the previous one, except on main, where
+# every run is a release gate.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      # Corepack runs the pnpm that package.json pins. Asserted, not assumed:
+      # corepack's own fallback is a different major.
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          WANT="$(node -p "require('./package.json').packageManager.split('+')[0].split('@')[1]")"
+          GOT="$(pnpm --version)"
+          [ "$WANT" = "$GOT" ] || { echo "::error::pnpm $GOT is running but package.json pins $WANT"; exit 1; }
+
+      - run: pnpm install --frozen-lockfile
+      # Includes deploy/deploy.test.ts, against util-linux flock.
+      - run: pnpm test
+      - run: pnpm build
+
+  # Deploys a main commit that passed `ci` to the VPS (deploy/DEPLOYMENT.md).
+  # The key can do one thing: its authorized_keys entry forces the timer's own
+  # deploy script, which takes only a full commit hash on origin/main and only
+  # moves forward. It is not fair.yoga's key. The host key is pinned from a
+  # secret, never scanned at run time. No third-party action: plain ssh.
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [ci]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    # One deploy at a time, never cancelled halfway. The script answers
+    # success for a commit already passed, so runs finishing out of order
+    # cannot roll back.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Deploy ${{ github.sha }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DEPLOY_SSH_KEY$DEPLOY_HOST$DEPLOY_KNOWN_HOSTS" ]; then
+            echo "::warning::Deploy is not configured (no production secrets); nothing was deployed. deploy/DEPLOYMENT.md."
+            exit 0
+          fi
+          for name in DEPLOY_SSH_KEY DEPLOY_HOST DEPLOY_KNOWN_HOSTS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is not set in the production environment."
+              exit 1
+            fi
+          done
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ConnectTimeout=20 \
+            -o ServerAliveInterval=30 \
+            "$DEPLOY_HOST" "$GITHUB_SHA"
