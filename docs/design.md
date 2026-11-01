@@ -194,9 +194,9 @@ The timer installs as a web app: a manifest with fair.yoga's icons, and a
 service worker that keeps every file, the stream's pieces included (about
 1 MB), so it opens and plays without a network. Tested on an iPhone
 (2026-11-01): opened from the home screen, a sitting keeps playing on a
-locked screen, as in Safari. Whether the iPhone's player fetches the stream's
-pieces through the service worker, so that the stream also plays offline, is
-still to be tested.
+locked screen, as in Safari. And in airplane mode, after one visit online, it
+opens and a sitting plays its bells with the phone locked: the iPhone's player
+fetches the stream's pieces through the service worker.
 
 - **Pages come from the network first,** so a deploy shows at once, and from
   the cache when there is none (or after 4 seconds). Everything else comes

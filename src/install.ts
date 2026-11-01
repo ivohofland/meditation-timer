@@ -12,5 +12,5 @@ export const isStandalone = (nav: { standalone?: boolean }, displayModeStandalon
  */
 export function installHint(o: { appleHandheld: boolean; standalone: boolean }): string | null {
   if (!o.appleHandheld || o.standalone) return null
-  return 'Tip: Share → Add to Home Screen keeps the timer at hand.'
+  return 'Tip: Share → Add to Home Screen keeps the timer at hand, also offline.'
 }
