@@ -3,6 +3,7 @@ import { keepAudioRunning, keepAwake, unlockAudio } from './platform'
 import { type SessionState, Session } from './session'
 import { beginStream } from './stream-engine'
 import { chooseEngine, isAppleHandheld } from './engine'
+import { installHint, isStandalone } from './install'
 import { DEFAULT_SETTINGS, parseSettings, type Settings } from './settings'
 import { START_DELAY_S } from './strikes'
 import { createSynthBell, DEFAULT_SOUNDS, RELEASE_S } from './synth-bell'
@@ -144,14 +145,19 @@ function finish() {
   begin.focus()
 }
 
-const engine = chooseEngine({
-  appleHandheld: isAppleHandheld(navigator.userAgent, navigator.maxTouchPoints),
-  override: new URLSearchParams(location.search).get('engine'),
-})
+const appleHandheld = isAppleHandheld(navigator.userAgent, navigator.maxTouchPoints)
+const engine = chooseEngine({ appleHandheld, override: new URLSearchParams(location.search).get('engine') })
 document.body.dataset.engine = engine
 $<HTMLElement>('hint').textContent = engine === 'stream'
   ? 'You can lock your phone; the bells keep coming.'
   : 'Leave this page open while you sit.'
+const install = installHint({
+  appleHandheld,
+  standalone: isStandalone(navigator as { standalone?: boolean }, matchMedia('(display-mode: standalone)').matches),
+})
+const installLine = $<HTMLElement>('install-hint')
+installLine.hidden = install === null
+installLine.textContent = install ?? ''
 
 let starting = false
 
@@ -188,3 +194,9 @@ stop.addEventListener('click', () => {
 
 fillForm(loadSettings())
 $<HTMLElement>('start-bell-note').textContent = `after ${START_DELAY_S} seconds to settle in`
+
+// Keeps the timer for offline use (src/sw.ts). Not in development, where
+// Vite serves the files itself and a cache would only hide changes.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => { /* it works without */ })
+}
