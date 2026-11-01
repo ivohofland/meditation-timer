@@ -1,0 +1,69 @@
+# timer.fair.yoga: static files, no app behind it. deploy/DEPLOYMENT.md.
+#
+# Its own site file (/etc/nginx/sites-available/timer.fair.yoga) and its own
+# certificate; fair.yoga's site file is not touched. Install the port-80 block
+# alone first, so certbot can issue before a `listen ... ssl` block exists.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name timer.fair.yoga;
+
+    location /.well-known/acme-challenge/ { root /var/www/timer.fair.yoga; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name timer.fair.yoga;
+
+    ssl_certificate     /etc/letsencrypt/live/timer.fair.yoga/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/timer.fair.yoga/privkey.pem;
+
+    # A link the deploy swaps in one rename; see deploy/deploy.sh.
+    root /var/www/timer.fair.yoga/current;
+    index index.html;
+
+    # An add_header inside a location replaces all of these, so /assets/
+    # below repeats them.
+    #
+    # media-src data: is the stream's playlist (src/stream-engine.ts) and the
+    # silent WAV that lets sound through the iPhone's silent switch
+    # (src/platform.ts). Without it the iPhone version stays silent with no
+    # error on the page. screen-wake-lock=(self) keeps the screen on.
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Permissions-Policy "screen-wake-lock=(self), camera=(), microphone=(), geolocation=()" always;
+    add_header Content-Security-Policy "default-src 'self'; media-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'" always;
+    # Pages, the manifest, the icons and the stream pieces keep their names
+    # across deploys: always ask whether they changed.
+    add_header Cache-Control "no-cache" always;
+
+    location / {
+        # /tune serves tune.html.
+        try_files $uri $uri.html $uri/ =404;
+    }
+
+    # Not in nginx's own mime.types; Chrome wants this type to install.
+    location = /manifest.webmanifest {
+        default_type application/manifest+json;
+    }
+
+    # The stream's pieces: nginx's mime.types already maps .ts to video/mp2t,
+    # which the iPhone's player needs. Checked in DEPLOYMENT.md.
+
+    # Vite's hashed files never change under their name.
+    location /assets/ {
+        add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "no-referrer" always;
+        add_header Permissions-Policy "screen-wake-lock=(self), camera=(), microphone=(), geolocation=()" always;
+        add_header Content-Security-Policy "default-src 'self'; media-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'" always;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+    }
+}

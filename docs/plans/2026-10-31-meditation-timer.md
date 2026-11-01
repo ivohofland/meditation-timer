@@ -312,6 +312,12 @@ A plain page: sliders for `fundamentalHz` (150–500), `t60S` (5–60), `beatHz`
 
 ### Task 7: Publish at timer.fair.yoga
 
+> **As built (2026-11-01):** deploys the way fair.yoga does instead of by
+> hand with rsync: CI on `main`, a forced-command key of its own, a root-owned
+> `timer-deploy` that builds in a throwaway container and swaps a `current`
+> link. `deploy/DEPLOYMENT.md` is the source of truth; the rest of this task
+> is the original plan.
+
 Hosted on fair.yoga's VPS as static files served by Nginx: no Node process,
 no container. The box is shared; nothing that operates it is. The timer has
 its own Nginx site file, its own certificate, its own web root and its own

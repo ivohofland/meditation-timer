@@ -234,3 +234,6 @@ pre {
   color: var(--color-ink);
   overflow-x: auto;
 }
+
+/* Tuning page: the presets sit a little below the bell buttons. */
+#ting-presets { margin-top: 12px; }
