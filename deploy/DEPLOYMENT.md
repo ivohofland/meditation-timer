@@ -172,6 +172,7 @@ curl -sI https://timer.fair.yoga                      # 200, and every header in
 curl -sI http://timer.fair.yoga                       # 301 to https
 curl -sI https://timer.fair.yoga/stream/end.ts        # Content-Type: video/mp2t
 curl -sI https://timer.fair.yoga/manifest.webmanifest # Content-Type: application/manifest+json
+curl -sI https://timer.fair.yoga/sw.js                # Cache-Control: no-cache, or an old service worker lingers
 curl -sI https://fair.yoga/api/health                 # fair.yoga answers as before
 ```
 

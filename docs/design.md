@@ -188,6 +188,26 @@ Tested on an iPhone (2026-10-31): plays with the `data:` playlist, including a
 screen. Still open: Android, and whether the bowl needs retuning for phone speakers (it sounded thinner on the phone; its 220 Hz
 fundamental sits below what small speakers reproduce well).
 
+## On the home screen, and offline
+
+The timer installs as a web app: a manifest with fair.yoga's icons, and a
+service worker that keeps every file, the stream's pieces included (about
+1 MB), so it opens and plays without a network. Tested on an iPhone
+(2026-11-01): opened from the home screen, a sitting keeps playing on a
+locked screen, as in Safari. Whether the iPhone's player fetches the stream's
+pieces through the service worker, so that the stream also plays offline, is
+still to be tested.
+
+- **Pages come from the network first,** so a deploy shows at once, and from
+  the cache when there is none (or after 4 seconds). Everything else comes
+  from the cache first.
+- **One cache per build,** named after a hash of every file's content, so a
+  sound re-rendered under the same name still replaces the old one.
+- **Range requests get a 206** from the cache: Safari asks media in ranges.
+- **A quiet hint** under Begin suggests Share → Add to Home Screen, only on an
+  iPhone or iPad in the browser: Android shows its own install prompt, and a
+  desktop has no lock screen to keep.
+
 ## Look
 
 fair.yoga's palette and typography for the settings screen (cream page, teal
