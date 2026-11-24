@@ -1,0 +1,7 @@
+# pnpm reads this setting here and nowhere else: in `.npmrc` or under
+# package.json's `pnpm` key it is silently ignored.
+#
+# Seven days, in minutes: pnpm refuses a version published more recently.
+# The Dependabot cooldown in .github/dependabot.yml is the same window, so a
+# proposed update is one pnpm will install. Change the two together.
+minimumReleaseAge: 10080
