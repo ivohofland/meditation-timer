@@ -1,0 +1,28 @@
+# Keeps the dependencies and the action pins from silently aging. Monthly,
+# one grouped PR per ecosystem. Security updates are separate: they are
+# switched on in the repository settings and are not held by the cooldown.
+version: 2
+updates:
+  # package.json and pnpm-lock.yaml.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    versioning-strategy: increase
+    groups:
+      npm:
+        patterns: ['*']
+    # Seven days: a release ages a week before it is proposed.
+    cooldown:
+      default-days: 7
+
+  # The action pins in .github/workflows: SHA and version comment together.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+    cooldown:
+      default-days: 7
